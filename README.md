@@ -3,7 +3,6 @@
 `nonebot-plugin-mortis-analysis`
 
 适用于 NoneBot2 / OneBot v11 的视频与图文分享解析插件。发送分享链接即可获取作品信息、热门评论和可播放媒体。
-仍在施工中
 
 ## 功能
 
