@@ -1,0 +1,16 @@
+.env
+.env.*
+data/
+cache/
+config/
+.pypirc
+ytb_cookies.txt
+*.cookie
+*.cookies
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+.pytest_cache/
