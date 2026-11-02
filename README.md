@@ -1,4 +1,4 @@
-# 小睦解析 · Mortis Analysis
+# 小睦解析 · 多平台视频图文解析与热评长图 · Mortis Analysis
 
 `nonebot-plugin-mortis-analysis`
 
