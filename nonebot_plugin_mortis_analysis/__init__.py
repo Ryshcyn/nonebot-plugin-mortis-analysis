@@ -302,10 +302,12 @@ async def bilibili(bot: Bot, event: Event) -> None:
         return
     if urlparse(url).hostname in {'b23.tv', 'bili2233.cn'}:
         try:
-            response = await async_http_request('GET', url, headers=BILIBILI_HEADER, follow_redirects=True)
-            url = str(response.url)
+            from .core.bili_link import resolve_short_url
+            url = await resolve_short_url(url, headers=BILIBILI_HEADER)
         except Exception as exc:
-            logger.warning(f'[小睦解析] B站短链读取失败：{type(exc).__name__}')
+            response = getattr(exc, 'response', None)
+            status = getattr(response, 'status_code', None)
+            logger.warning(f'[小睦解析] B站短链读取失败：{type(exc).__name__}，HTTP={status}')
             await send_both(bot, event, MessageSegment.text('B站短链暂时无法读取，请使用完整链接或稍后重试。'))
             return
     parsed = urlparse(url)

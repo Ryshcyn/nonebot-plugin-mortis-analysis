@@ -77,6 +77,32 @@ class HandlerTests(unittest.IsolatedAsyncioTestCase):
             await self.plugin.bilibili(bot=self.bot,event=self.event('https://space.bilibili.com/1/favlist?fid=123'))
         self.assertIn('暂无可读取',str(self.bot.send_group_msg.await_args))
 
+    async def test_short_share_routes_to_video_without_fetching_html(self):
+        import httpx
+        from nonebot.adapters.onebot.v11 import MessageSegment
+        import json
+
+        resolver = importlib.import_module(self.plugin.__name__+'.core.bili_link')
+        delivery = importlib.import_module(self.plugin.__name__+'.delivery')
+        destination = 'https://www.bilibili.com/video/BV1H6xe6PEdU?p=1&share_source=QQ'
+        calls = []
+
+        def response(request):
+            calls.append(str(request.url))
+            if request.url.host == 'b23.tv':
+                return httpx.Response(302, headers={'Location': destination})
+            return httpx.Response(412)
+
+        client = httpx.AsyncClient(transport=httpx.MockTransport(response))
+        event = self.event('')
+        event.message = Message(MessageSegment.json(json.dumps(
+            {'meta': {'detail_1': {'qqdocurl': 'https://b23.tv/example'}}})))
+        with patch.object(resolver.httpx, 'AsyncClient', return_value=client), \
+                patch.object(delivery, 'handle_bilibili_video', AsyncMock()) as handler:
+            await self.plugin.bilibili(bot=self.bot, event=event)
+        handler.assert_awaited_once_with(self.bot, event, destination)
+        self.assertEqual(calls, ['https://b23.tv/example'])
+
     async def test_article_await_and_file_cleanup(self):
         article = Mock(is_note=AsyncMock(return_value=False),fetch_content=AsyncMock(),markdown=Mock(return_value='# 专栏'))
         async def upload(**kwargs):
