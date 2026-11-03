@@ -106,8 +106,6 @@ plugins = ["nonebot_plugin_mortis_analysis"]
 
 所有插件写入的文件由 `nonebot-plugin-localstore` 管理：配置目录存放自定义评论模板，数据目录存放解析/评论开关，缓存目录存放临时媒体。可使用 localstore 的 `LOCALSTORE_USE_CWD` 或 `LOCALSTORE_PLUGIN_DATA_DIR`、`LOCALSTORE_PLUGIN_CONFIG_DIR`、`LOCALSTORE_PLUGIN_CACHE_DIR` 配置持久化路径。容器部署需要持久化这些目录。
 
-OneBot 协议端与机器人需能够读取同一份媒体文件。异机部署应在宿主中配置受限媒体传输；插件不会启动公开文件服务，也不依赖特定 Docker 布局。Cookie 源文件和缓存目录不得对外发布。
-
 从源码开发或验证：
 
 ```sh
