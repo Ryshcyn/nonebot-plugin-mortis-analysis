@@ -39,6 +39,25 @@ class HandlerTests(unittest.IsolatedAsyncioTestCase):
             message=Message(url), original_message=Message(url), raw_message=url, font=0,
             sender={'user_id':10002,'nickname':'test','role':'member'}))
 
+    async def test_av_and_bv_videos_use_path_identity(self):
+        delivery = importlib.import_module(self.plugin.__name__+'.delivery')
+        info = dict(aid=117569679792325, bvid='BV1example123', title='测试', pages=[{'duration':1}])
+        fake = Mock(get_info=AsyncMock(return_value=info))
+        cases = [('av117569679792325', 'aid', 117569679792325),
+                 ('BV178xW6cE6G', 'bvid', 'BV178xW6cE6G')]
+        for identifier, key, value in cases:
+            with self.subTest(identifier=identifier), patch.object(delivery.video,'Video',return_value=fake) as factory, \
+                    patch.object(delivery,'comment_state',return_value=(False,'image')), \
+                    patch.object(delivery,'send_information',AsyncMock(return_value=False)) as send:
+                await delivery.handle_bilibili_video(self.bot,self.event('test'),
+                    'https://www.bilibili.com/video/'+identifier+'?from=share&ref=BV178xW6cE6G')
+                self.assertEqual(factory.call_args.kwargs[key],value)
+                self.assertEqual(send.await_args.args[2]['bvid'],info['bvid'])
+        with patch.object(delivery.video,'Video') as factory:
+            await delivery.handle_bilibili_video(self.bot,self.event('test'),
+                'https://www.bilibili.com/video/invalid?ref=BV178xW6cE6G')
+            factory.assert_not_called()
+
     async def test_configurable_notice_and_disable(self):
         @self.plugin.resolve_controller
         async def handler(bot, event):

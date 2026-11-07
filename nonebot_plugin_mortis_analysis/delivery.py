@@ -105,12 +105,14 @@ async def handle_bilibili_video(bot, event, url):
     information_sent = False
     try:
         import re
-        matched = re.search(r'BV[0-9A-Za-z]{10}', url)
+        matched = re.fullmatch(r'/video/(BV[0-9A-Za-z]{10}|av[0-9]+)/?', urlparse(url).path, re.I)
         if not matched:
             raise ValueError('Video ID missing')
-        bvid = matched.group()
-        v = video.Video(bvid=bvid, credential=Credential(sessdata=settings['bili_sessdata'] or None))
+        identifier = matched.group(1)
+        identity = {'aid': int(identifier[2:])} if identifier.lower().startswith('av') else {'bvid': identifier}
+        v = video.Video(**identity, credential=Credential(sessdata=settings['bili_sessdata'] or None))
         info = await asyncio.wait_for(v.get_info(), timeout=20)
+        bvid = info.get('bvid') or (identifier if 'bvid' in identity else v.get_bvid())
         page = int(parse_qs(urlparse(url).query).get('p', ['1'])[0])-1
         if page < 0 or page >= len(info.get('pages') or [None]):
             raise ValueError('Invalid page')
